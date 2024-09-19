@@ -1,0 +1,7 @@
+## Changelog
+
+### 0.1.0
+
+First release of `sopel-boorus` plugin collection.
+
+Launch plugins are `danbooru` and `gelbooru`.
