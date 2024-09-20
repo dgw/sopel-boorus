@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from sopel import formatting as fmt
+
 
 class AbstractBooruPost:
     """Interface definition of a booru post.
@@ -49,6 +51,20 @@ class AbstractBooruPost:
         their meanings are booru-dependent.
         """
         raise NotImplementedError
+
+    @property
+    def rating_color(self) -> str:
+        """The IRC color to use for this post's content rating.
+
+        Simplest way to do this is to map the internal rating value to a member
+        of :class:`sopel.formatting.colors`.
+        """
+        raise NotImplementedError
+
+    @property
+    def display_rating(self) -> str:
+        """This post's rating, formatted as it should be for IRC output."""
+        return fmt.bold(fmt.color(self.rating.title(), self.rating_color))
 
     @property
     def tags(self) -> list[str]:
