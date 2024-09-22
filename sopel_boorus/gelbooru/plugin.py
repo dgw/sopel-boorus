@@ -88,9 +88,12 @@ def search_tags(tags: str) -> dict:
 def refresh_cache(cache: QueryCache, query: str):
     """Fetch and store a batch of results for ``query`` in the ``cache``."""
     data = search_tags(query)
-    posts = data['post']
-    new_items: list[GelbooruPost] = []
+    posts = data.get('post', [])
 
+    if not posts:
+        return
+
+    new_items: list[GelbooruPost] = []
     for post in posts:
         # no need to shuffle anything here, since `search_tags()` already adds
         # `sort:random` to the search query; gelbooru.com shuffles for us

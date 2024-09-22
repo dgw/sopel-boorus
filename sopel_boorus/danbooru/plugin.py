@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from sopel import plugin, tools
 
+from .. import errors
 from ..util import get_json, normalize_ratings, QueryCache
 from .types import DanbooruPost
 
@@ -66,9 +67,14 @@ def search_tags(tags: str) -> dict:
     """
     tags += ' random:10'
 
-    return get_json(API_SEARCH, params={
+    data = get_json(API_SEARCH, params={
         'tags': tags,
     })
+
+    if 'error' in data:
+        LOGGER.info(
+            "Danbooru API error: %s (%s)", data['error'], data['message'])
+        raise errors.APIError(data['message'])
 
 
 def refresh_cache(cache: QueryCache, query: str):
@@ -111,11 +117,18 @@ def danbooru(bot, trigger):
         query = query.strip().lower()
 
     query = normalize_ratings(query)
+    error = None
 
     if post_cache.size(query) < 2:
-        refresh_cache(post_cache, query)
+        try:
+            refresh_cache(post_cache, query)
+        except errors.APIError as exc:
+            error = exc
 
-    if post_cache.size(query) == 0:
+    if error is not None:
+        bot.reply('%s' % error)
+        return
+    elif post_cache.size(query) == 0:
         bot.reply('No results for %r.' % query)
         return
 

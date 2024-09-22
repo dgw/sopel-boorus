@@ -39,10 +39,12 @@ def get_json(url: str, params: dict[str, Any] | None = None) -> dict:
         raise errors.ServerError("Couldn't connect to server.")
     except requests.exceptions.ReadTimeout:
         raise errors.ServerError("Server took too long to send data.")
+    if r.status_code == 422:
+        raise errors.APIError("You probably used too many tags. (HTTP 422)")
     try:
         r.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        raise errors.APIError("HTTP error: " + str(e))
+        raise errors.APIError("HTTP error " + str(e.response.status_code))
     try:
         data = r.json()
     except ValueError:
