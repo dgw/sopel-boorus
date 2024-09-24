@@ -14,7 +14,7 @@ readme = { file=["README.md", "NEWS"], content-type="text/markdown" }
 
 [project]
 name = "sopel-boorus"
-version = "0.1.0"
+version = "0.1.1"
 description = "Image board (booru) plugins for Sopel IRC bots."
 
 authors = [

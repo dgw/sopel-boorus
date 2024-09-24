@@ -1,5 +1,11 @@
 ## Changelog
 
+### 0.1.1
+
+Fixed:
+* Handle more error cases (#1)
+
+
 ### 0.1.0
 
 First release of `sopel-boorus` plugin collection.
