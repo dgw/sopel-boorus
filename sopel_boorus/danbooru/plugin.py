@@ -40,18 +40,6 @@ def shutdown(bot):
         pass
 
 
-def _colorize_rating(rating: str) -> str:
-    if rating == 'explicit':
-        return "\x02\x0304NSFW\x03\x02"
-    elif rating == 'sensitive':
-        return "\x02\x0307Sensitive\x03\x02"
-    elif rating == 'questionable':
-        return "\x02\x0308Questionable\x03\x02"
-    elif rating == 'general':
-        return "\x02\x0309Safe\x03\x02"
-    raise RuntimeError('Unknown rating %r' % rating)
-
-
 def fetch_post(id_: int) -> dict:
     """Fetch a Danbooru post by ID.
 
@@ -96,7 +84,7 @@ def say_post(bot: SopelWrapper, post: DanbooruPost, link=True):
     bot.say(
         template.format(
             score=post.score_str,
-            rating=_colorize_rating(post.rating),
+            rating=post.display_rating,
             tags=post.tag_string,
         ),
         truncation=' […]',
