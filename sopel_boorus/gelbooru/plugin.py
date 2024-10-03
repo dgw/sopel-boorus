@@ -145,6 +145,12 @@ def gelbooru(bot, trigger):
 @plugin.output_prefix(OUTPUT_PREFIX)
 def gelbooru_url(bot, trigger):
     """Look up a Gelbooru post when linked in chat."""
+    # first, skip anything that isn't actually a post
+    # like a tracker issue or forum thread
+    # (WAY easier to do it this way than in regex)
+    if 'page=post' not in trigger:
+        return plugin.NOLIMIT
+
     data = fetch_post(trigger.group(1))
     post = GelbooruPost.new_from_json(data)
     say_post(bot, post, link=False)
