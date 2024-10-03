@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from html import unescape
+
 
 class AbstractBooruPost:
     """Interface definition of a booru post.
@@ -58,7 +60,7 @@ class AbstractBooruPost:
     @property
     def tag_string(self) -> str:
         """The post's tags, as a string for display."""
-        return ' '.join(self.tags)
+        return unescape(' '.join(self.tags))
 
     @property
     def date(self) -> datetime:
