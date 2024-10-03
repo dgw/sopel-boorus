@@ -136,7 +136,7 @@ def danbooru(bot, trigger):
     say_post(bot, post, link=True)
 
 
-@plugin.url(r'https?://danbooru\.donmai\.us/posts/(\d+)')
+@plugin.url(r'https?://danbooru\.donmai\.us/posts/(\d+)/?$')
 @plugin.output_prefix(OUTPUT_PREFIX)
 def danbooru_url(bot, trigger):
     """Look up a Danbooru post when linked in chat."""
