@@ -1,9 +1,25 @@
 ## Changelog
 
+### 0.1.2
+
+Changed:
+* URL patterns are stricter ([#8][])
+
+Fixed:
+* Unescape HTML entities in tag names ([#7][])
+* Corrected post rating colors ([#3][])
+
+[#3]: https://github.com/dgw/sopel-boorus/pull/3
+[#7]: https://github.com/dgw/sopel-boorus/pull/7
+[#8]: https://github.com/dgw/sopel-boorus/pull/8
+
+
 ### 0.1.1
 
 Fixed:
-* Handle more error cases (#1)
+* Handle more error cases ([#1][])
+
+[#1]: https://github.com/dgw/sopel-boorus/pull/1
 
 
 ### 0.1.0
