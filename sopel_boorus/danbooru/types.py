@@ -11,6 +11,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Type
 
+from sopel.formatting import colors
+
 from ..types import AbstractBooruPost
 
 
@@ -19,6 +21,12 @@ RATING_MAP = {
     's': 'sensitive',
     'q': 'questionable',
     'e': 'explicit',
+}
+RATING_COLOR_MAP = {
+    'g': colors.LIGHT_GREEN,
+    's': colors.YELLOW,
+    'q': colors.ORANGE,
+    'e': colors.RED,
 }
 
 
@@ -63,6 +71,10 @@ class DanbooruPost(AbstractBooruPost):
     @property
     def rating(self) -> str:
         return RATING_MAP.get(self._rating)
+
+    @property
+    def rating_color(self) -> str:
+        return RATING_COLOR_MAP.get(self._rating)
 
     @property
     def tags(self) -> str:
