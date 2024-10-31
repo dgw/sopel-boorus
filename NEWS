@@ -1,5 +1,13 @@
 ## Changelog
 
+### 0.1.3
+
+Fixed:
+* URL pattern for `danbooru` became *too* strict ([#9][])
+
+[#9]: https://github.com/dgw/sopel-boorus/pull/9
+
+
 ### 0.1.2
 
 Changed:
