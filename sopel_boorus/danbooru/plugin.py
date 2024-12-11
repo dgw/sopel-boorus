@@ -64,12 +64,17 @@ def search_tags(tags: str) -> dict:
             "Danbooru API error: %s (%s)", data['error'], data['message'])
         raise errors.APIError(data['message'])
 
+    return data
+
 
 def refresh_cache(cache: QueryCache, query: str):
     """Fetch and store a batch of results for ``query`` in the ``cache``."""
     posts = search_tags(query)
-    new_items: list[DanbooruPost] = []
 
+    if not posts:
+        return
+
+    new_items: list[DanbooruPost] = []
     for post in posts:
         # no need to shuffle anything here, since `search_tags()` already adds
         # `random:10` to the search query; danbooru.donmai.us shuffles for us
