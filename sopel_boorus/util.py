@@ -21,7 +21,7 @@ from . import errors
 LOGGER = get_logger('boorus.util')
 
 
-def get_json(url: str, params: dict[str, Any] | None = None) -> dict:
+def get_json(url: str, params: dict[str, Any] | None = None) -> list | dict:
     """Fetch data from a JSON endpoint and return the parsed data.
 
     This function only deals with GET requests, but its advantage is in

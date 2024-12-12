@@ -48,7 +48,7 @@ def fetch_post(id_: int) -> dict:
     return get_json(API_POST_TMPL.format(id=id_))
 
 
-def search_tags(tags: str) -> dict:
+def search_tags(tags: str) -> list:
     """Search for random posts matching ``tags``, after normalization.
 
     Exceptions from :func:`..util.get_json` can bubble up.
@@ -60,10 +60,15 @@ def search_tags(tags: str) -> dict:
     })
 
     if 'error' in data:
+        # Bit weird but should be safe. The expected list of post dicts will
+        # never contain the literal string 'error', but for errors the API
+        # returns a dict with 'error' and 'message' keys instead of a list.
         LOGGER.info(
             "Danbooru API error: %s (%s)", data['error'], data['message'])
         raise errors.APIError(data['message'])
 
+    # thankfully, if there was no error, Danbooru just directly returns a list
+    # (which is simply empty if there are no results)
     return data
 
 
