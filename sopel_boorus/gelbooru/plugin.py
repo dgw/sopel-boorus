@@ -56,14 +56,14 @@ def fetch_post(id_: int) -> dict:
     })['post'][0]
 
 
-def search_tags(tags: str) -> dict:
+def search_tags(tags: str) -> list:
     """Search for random posts matching ``tags``, after normalization.
 
     Exceptions from :func:`..util.get_json` can bubble up.
     """
     tags += ' sort:random'
 
-    return get_json(API_BASE, params={
+    data = get_json(API_BASE, params={
         'page': 'dapi',
         's': 'post',
         'q': 'index',
@@ -72,11 +72,13 @@ def search_tags(tags: str) -> dict:
         'json': 1,
     })
 
+    # gotta love Gelbooru jank; Danbooru just returns a list, no dict wrapper
+    return data.get('post', [])
+
 
 def refresh_cache(cache: QueryCache, query: str):
     """Fetch and store a batch of results for ``query`` in the ``cache``."""
-    data = search_tags(query)
-    posts = data.get('post', [])
+    posts = search_tags(query)
 
     if not posts:
         return
