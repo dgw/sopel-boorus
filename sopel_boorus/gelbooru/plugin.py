@@ -93,10 +93,11 @@ def refresh_cache(cache: QueryCache, query: str):
 
 
 def say_post(bot: SopelWrapper, post: GelbooruPost, link=True):
-    template = "Score: {score} | Rating: {rating} | Tags: {tags}"
+    template = "ID: {id} | Score: {score} | Rating: {rating} | Tags: {tags}"
 
     bot.say(
         template.format(
+            id=post.id,
             score=post.score_str,
             rating=post.display_rating,
             tags=post.tag_string,
