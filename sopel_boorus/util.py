@@ -63,7 +63,8 @@ def normalize_ratings(tags: str) -> str:
     with ``rating:`` operators, for user convenience.
 
     If no rating is present after checking all substitutions, appends
-    ``rating:general`` for SFW results.
+    ``rating:general`` to fetch only SFW results _unless_ the user searched for
+    a post by its hash.
     """
     if not tags:
         tags = 'rating:general'
@@ -75,7 +76,10 @@ def normalize_ratings(tags: str) -> str:
             .replace('safe', 'rating:general')
             .replace('sfw', 'rating:general')
         )
-    if 'rating:' not in tags:
+    if 'rating:' not in tags and 'md5:' not in tags:
+        # no rating specified, and not searching by MD5 hash
+        # (never seen a booru use non-MD5 hashes, but this check should be made
+        # a bit more elegant if multiple hash algorithms need to be supported…)
         tags += ' rating:general'
     return tags.strip()
 
