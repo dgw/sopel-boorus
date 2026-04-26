@@ -8,6 +8,7 @@ Licensed under the Eiffel Forum License v2.
 """
 from __future__ import annotations
 
+from importlib.metadata import version
 from typing import Any, Generator
 
 from pylru import lrucache
@@ -29,10 +30,24 @@ def get_json(url: str, params: dict[str, Any] | None = None) -> list | dict:
     the various errors ``requests`` might raise into custom types with a
     human-friendly message that can be sent to IRC.
     """
+    # Goal is for this function to handle at least 95% of needs, since wrapping
+    # `requests.get()` quickly reaches diminishing returns. Transforming all the
+    # common exceptions into custom types is *almost* worthwhile; but booru
+    # handlers that need more flexibility can always use `requests` itself and
+    # catch the lower-level exceptions themselves.
     try:
-        r = requests.get(url=url,
-                         params=params,
-                         timeout=(10.0, 4.0),)
+        r = requests.get(
+            url=url,
+            params=params,
+            timeout=(10.0, 4.0),
+            # TODO: merge with custom headers passed into the function
+            # TODO: support passing custom headers into the function at all
+            headers={
+                "User-Agent": "sopel-boorus/{}".format(
+                    version('sopel-boorus'),
+                ),
+            },
+        )
     except requests.exceptions.ConnectTimeout:
         raise errors.ServerError("Connection timed out.")
     except requests.exceptions.ConnectionError:
