@@ -1,5 +1,13 @@
 ## Changelog
 
+### 0.1.6
+
+Changed:
+* Provide a custom user-agent when calling booru APIs ([#20][])
+
+[#20]: https://github.com/dgw/sopel-boorus/pull/20
+
+
 ### 0.1.5
 
 Added:
