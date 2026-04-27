@@ -3,11 +3,15 @@
 ### 0.1.5
 
 Added:
-* Post ID number in `danbooru`/`gelbooru` output (#15)
+* Post ID number in `danbooru`/`gelbooru` output ([#15][])
 
 Changed:
-* Don't append `rating:general` to `md5:` queries (#16)
-* Cleaned up `search_tags()` abstraction (#11)
+* Don't append `rating:general` to `md5:` queries ([#16][])
+* Cleaned up `search_tags()` abstraction ([#11][])
+
+[#11]: https://github.com/dgw/sopel-boorus/pull/11
+[#15]: https://github.com/dgw/sopel-boorus/pull/15
+[#16]: https://github.com/dgw/sopel-boorus/pull/16
 
 
 ### 0.1.4
