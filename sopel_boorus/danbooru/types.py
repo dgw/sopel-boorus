@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Type
 
+from sopel.config.types import StaticSection, ValidatedAttribute
 from sopel.formatting import colors
 
 from ..types import AbstractBooruPost
@@ -28,6 +29,10 @@ RATING_COLOR_MAP = {
     'q': colors.ORANGE,
     'e': colors.RED,
 }
+
+
+class DanbooruSettings(StaticSection):
+    username = ValidatedAttribute('username')
 
 
 class DanbooruPost(AbstractBooruPost):
