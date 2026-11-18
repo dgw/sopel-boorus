@@ -8,17 +8,20 @@ Licensed under the Eiffel Forum License v2.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from importlib.metadata import version
+from typing import TYPE_CHECKING, Any
 
 from sopel import plugin, tools
 
 from .. import errors
-from ..util import get_json, normalize_ratings, QueryCache
-from .types import DanbooruPost
+from ..util import get_json as util_get_json, normalize_ratings, QueryCache
+from .types import DanbooruPost, DanbooruSettings
 
 
 if TYPE_CHECKING:
     from sopel.bot import SopelWrapper
+    from sopel.config import Config
+    from sopel.trigger import Trigger
 
 
 API_BASE = 'https://danbooru.donmai.us'
@@ -31,6 +34,18 @@ OUTPUT_PREFIX = '[Danbooru] '
 
 def setup(bot):
     bot.memory[CACHE_KEY] = QueryCache(25)
+    bot.settings.define_section('danbooru', DanbooruSettings)
+
+
+def configure(settings):
+    settings.define_section('danbooru', DanbooruSettings)
+    print(
+        "If set, your Danbooru username will be included in the request "
+        "headers when fetching posts, so Danbooru admins can contact you "
+        "about any problems with your bot.")
+    settings.danbooru.configure_setting(
+        'username',
+        'Danbooru username:')
 
 
 def shutdown(bot):
@@ -40,24 +55,92 @@ def shutdown(bot):
         pass
 
 
-def fetch_post(id_: int) -> dict:
+def _build_danbooru_headers(settings: Config) -> dict[str, str]:
+    """Build Danbooru-specific HTTP headers.
+
+    Follows Danbooru's suggested User-Agent format with booru username included,
+    but falls back to a clean "sopel-boorus/<version>" if no username is set.
+
+    Args:
+        settings: Sopel's Config object, for reading from this plugin's section.
+
+    Returns:
+        A dict of HTTP headers with a Danbooru-compliant User-Agent.
+    """
+    agent = "sopel-boorus/{}".format(version('sopel-boorus'))
+    if username := settings.danbooru.username:
+        agent += " ({})".format(username)
+
+    return {
+        "User-Agent": agent,
+    }
+
+
+def get_json(
+    settings: Config,
+    url: str,
+    params: dict[str, Any] | None = None,
+) -> list | dict:
+    """Wrapper around util.get_json() with Danbooru-specific headers.
+
+    This is a convenience wrapper that automatically includes Danbooru's
+    preferred User-Agent format and any configured authentication.
+
+    Args:
+        settings: The Sopel config object.
+        url: The URL to fetch.
+        params: Query parameters to pass to the endpoint.
+
+    Returns:
+        The parsed JSON data as a dict or list.
+
+    Raises:
+        ServerError: If a connection or timeout error occurs.
+        APIError: If the API returns an error or the response cannot be parsed.
+    """
+    return util_get_json(
+        url,
+        params=params,
+        headers=_build_danbooru_headers(settings),
+    )
+
+
+def fetch_post(id_: int, settings: Config) -> dict:
     """Fetch a Danbooru post by ID.
 
-    Exceptions from :func:`..util.get_json` can bubble up.
+    Args:
+        id_: The post ID.
+        settings: The Sopel config object.
+
+    Returns:
+        The parsed JSON post data.
+
+    Raises:
+        Exceptions from :func:`get_json` can bubble up.
     """
-    return get_json(API_POST_TMPL.format(id=id_))
+    return get_json(settings, API_POST_TMPL.format(id=id_))
 
 
-def search_tags(tags: str) -> list:
+def search_tags(tags: str, settings: Config) -> list:
     """Search for random posts matching ``tags``, after normalization.
 
-    Exceptions from :func:`..util.get_json` can bubble up.
+    Args:
+        tags: Search tags.
+        settings: The Sopel config object.
+
+    Returns:
+        A list of matching posts.
+
+    Raises:
+        Exceptions from :func:`get_json` can bubble up.
     """
     tags += ' random:10'
 
-    data = get_json(API_SEARCH, params={
-        'tags': tags,
-    })
+    data = get_json(
+        settings,
+        API_SEARCH,
+        params={'tags': tags},
+    )
 
     if 'error' in data:
         # Bit weird but should be safe. The expected list of post dicts will
@@ -72,9 +155,15 @@ def search_tags(tags: str) -> list:
     return data
 
 
-def refresh_cache(cache: QueryCache, query: str):
-    """Fetch and store a batch of results for ``query`` in the ``cache``."""
-    posts = search_tags(query)
+def refresh_cache(cache: QueryCache, query: str, settings: Config):
+    """Fetch and store a batch of results for ``query`` in the ``cache``.
+
+    Args:
+        cache: The query cache to store results in.
+        query: The search query.
+        settings: The Sopel config object.
+    """
+    posts = search_tags(query, settings)
 
     if not posts:
         return
@@ -106,7 +195,7 @@ def say_post(bot: SopelWrapper, post: DanbooruPost, link=True):
 @plugin.commands('danbooru', 'danb')
 @plugin.example('.danb <tags>')
 @plugin.output_prefix(OUTPUT_PREFIX)
-def danbooru(bot, trigger):
+def danbooru(bot: SopelWrapper, trigger: Trigger):
     """Get a random image post from danbooru.donmai.us, filtered by <tags>."""
     post_cache = bot.memory[CACHE_KEY]
 
@@ -120,7 +209,7 @@ def danbooru(bot, trigger):
 
     if post_cache.size(query) < 2:
         try:
-            refresh_cache(post_cache, query)
+            refresh_cache(post_cache, query, bot.settings)
         except errors.APIError as exc:
             error = exc
 
@@ -137,8 +226,8 @@ def danbooru(bot, trigger):
 
 @plugin.url(r'https?://danbooru\.donmai\.us/(?:posts|post/show)/(\d+)/?(?:[?#].*|$)')
 @plugin.output_prefix(OUTPUT_PREFIX)
-def danbooru_url(bot, trigger):
+def danbooru_url(bot: SopelWrapper, trigger: Trigger):
     """Look up a Danbooru post when linked in chat."""
-    data = fetch_post(trigger.group(1))
+    data = fetch_post(trigger.group(1), bot.settings)
     post = DanbooruPost.new_from_json(data)
     say_post(bot, post, link=False)
