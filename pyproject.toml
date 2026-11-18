@@ -46,8 +46,10 @@ dependencies = [
   "requests",  # let sopel determine version constraint
 ]
 
-[project.optional-dependencies]
-dev = ["pytest"]
+[dependency-groups]
+dev = [
+  "pytest",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/dgw/sopel-boorus"
