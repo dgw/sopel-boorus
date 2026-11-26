@@ -22,31 +22,50 @@ from . import errors
 LOGGER = get_logger('boorus.util')
 
 
-def get_json(url: str, params: dict[str, Any] | None = None) -> list | dict:
+def get_json(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
+) -> list | dict:
     """Fetch data from a JSON endpoint and return the parsed data.
 
     This function only deals with GET requests, but its advantage is in
     managing the user-agent, timeouts, and other boilerplate, plus translating
     the various errors ``requests`` might raise into custom types with a
     human-friendly message that can be sent to IRC.
+
+    Args:
+        url: The URL to fetch.
+        params: Query parameters to pass to the endpoint.
+        headers: Custom HTTP headers to include. These will be merged with
+            the default User-Agent header; custom headers take precedence.
+
+    Returns:
+        The parsed JSON data as a dict or list.
+
+    Raises:
+        ServerError: If a connection or timeout error occurs.
+        APIError: If the API returns an error or the response cannot be parsed.
     """
     # Goal is for this function to handle at least 95% of needs, since wrapping
     # `requests.get()` quickly reaches diminishing returns. Transforming all the
     # common exceptions into custom types is *almost* worthwhile; but booru
     # handlers that need more flexibility can always use `requests` itself and
     # catch the lower-level exceptions themselves.
+    final_headers = requests.structures.CaseInsensitiveDict({
+        "User-Agent": "sopel-boorus/{}".format(
+            version('sopel-boorus'),
+        ),
+    })
+    if headers:
+        final_headers.update(headers)
+
     try:
         r = requests.get(
             url=url,
             params=params,
             timeout=(10.0, 4.0),
-            # TODO: merge with custom headers passed into the function
-            # TODO: support passing custom headers into the function at all
-            headers={
-                "User-Agent": "sopel-boorus/{}".format(
-                    version('sopel-boorus'),
-                ),
-            },
+            headers=final_headers,
         )
     except requests.exceptions.ConnectTimeout:
         raise errors.ServerError("Connection timed out.")
